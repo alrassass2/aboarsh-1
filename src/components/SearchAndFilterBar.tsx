@@ -2,7 +2,6 @@ import React from 'react';
 import { Search, X, Filter } from 'lucide-react';
 import { ALL_KEYWORDS } from '../data/keywordsData';
 import { DEPARTMENTS } from '../data/categoriesData';
-import { AiAssistant } from './AiAssistant';
 
 interface SearchAndFilterBarProps {
   searchQuery: string;
@@ -123,12 +122,6 @@ export const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
           ))}
         </div>
       </div>
-
-      {/* 4. Grounded AI Assistant at the end of the filter */}
-      <AiAssistant
-        onOpenQuoteModal={onOpenQuoteModal}
-        onSelectArticle={onSelectArticle}
-      />
     </div>
   );
 };
