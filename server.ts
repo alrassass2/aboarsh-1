@@ -13,11 +13,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
 
-// Enforce SSL / HTTPS Security Headers (HSTS, Content Security, MIME protection)
+// Security & CORS Headers (Framing allowed for AI Studio preview iframe)
 app.use((req, res, next) => {
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
@@ -26,13 +24,20 @@ app.use(express.json({ limit: '2mb' }));
 
 // Initialize Google GenAI client safely using server-side env variable
 let aiClient: GoogleGenAI | null = null;
-try {
-  if (process.env.GEMINI_API_KEY) {
-    aiClient = new GoogleGenAI();
+function getAiClient(): GoogleGenAI | null {
+  if (aiClient) return aiClient;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY;
+  if (apiKey) {
+    try {
+      aiClient = new GoogleGenAI({ apiKey });
+      return aiClient;
+    } catch (err) {
+      console.warn('GoogleGenAI initialization warning:', err);
+    }
   }
-} catch (err) {
-  console.warn('GoogleGenAI initialization warning:', err);
+  return null;
 }
+getAiClient();
 
 // System Instruction Grounding for زجاج سكريت ابوعريش
 const SYSTEM_INSTRUCTION = `
@@ -96,9 +101,10 @@ app.post('/api/assistant/chat', async (req: Request, res: Response): Promise<voi
     }
 
     // If Gemini client is initialized and API Key is active
-    if (aiClient && process.env.GEMINI_API_KEY) {
+    const client = getAiClient();
+    if (client) {
       try {
-        const response = await aiClient.models.generateContent({
+        const response = await client.models.generateContent({
           model: 'gemini-3.8-flash',
           contents: [
             {
@@ -142,6 +148,9 @@ app.post('/api/assistant/chat', async (req: Request, res: Response): Promise<voi
 
 // Production static assets or Vite development middleware
 async function startServer() {
+  // Always serve public directory static assets (favicon, manifest, robots, sitemap, icons)
+  app.use(express.static(path.resolve(__dirname, 'public')));
+
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist')));
     app.get('*', (_req, res) => {

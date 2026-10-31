@@ -113,9 +113,16 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             </div>
           )}
 
-          {/* Full Rich HTML Content */}
+          {/* Full Rich HTML Content with safe link handling */}
           <div
             className="article-rich-content pt-2"
+            onClick={(e) => {
+              const target = (e.target as HTMLElement).closest('a');
+              if (target) {
+                target.setAttribute('target', '_blank');
+                target.setAttribute('rel', 'noopener noreferrer');
+              }
+            }}
             dangerouslySetInnerHTML={{ __html: article.fullContentHtml }}
           />
 
