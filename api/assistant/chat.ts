@@ -64,8 +64,11 @@ export default async function handler(req: any, res: any) {
   if (apiKey && apiKey !== 'MY_GEMINI_API_KEY' && !apiKey.includes('MY_')) {
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini API timeout')), 4000)
+      );
+      const apiCallPromise = ai.models.generateContent({
+        model: 'gemini-2.5-flash',
         contents: [
           {
             role: 'user',
@@ -74,11 +77,12 @@ export default async function handler(req: any, res: any) {
         ],
       });
 
+      const response: any = await Promise.race([apiCallPromise, timeoutPromise]);
       const replyText = response.text || generateGroundedFallback(message);
       return res.status(200).json({
         success: true,
         reply: replyText,
-        provider: 'gemini-3.8-flash',
+        provider: 'gemini-2.5-flash',
         timestamp: Date.now(),
       });
     } catch (err: any) {

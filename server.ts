@@ -104,8 +104,11 @@ app.post('/api/assistant/chat', async (req: Request, res: Response): Promise<voi
     const client = getAiClient();
     if (client) {
       try {
-        const response = await client.models.generateContent({
-          model: 'gemini-3.8-flash',
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Gemini API timeout')), 4000)
+        );
+        const apiCallPromise = client.models.generateContent({
+          model: 'gemini-2.5-flash',
           contents: [
             {
               role: 'user',
@@ -114,11 +117,12 @@ app.post('/api/assistant/chat', async (req: Request, res: Response): Promise<voi
           ],
         });
 
+        const response: any = await Promise.race([apiCallPromise, timeoutPromise]);
         const replyText = response.text || generateGroundedFallback(message);
         res.json({
           success: true,
           reply: replyText,
-          provider: 'gemini-3.8-flash',
+          provider: 'gemini-2.5-flash',
           encrypted: true,
           timestamp: Date.now(),
         });
@@ -139,9 +143,11 @@ app.post('/api/assistant/chat', async (req: Request, res: Response): Promise<voi
     });
   } catch (error: any) {
     console.error('API Assistant Chat Error:', error);
-    res.status(500).json({
-      error: 'Internal assistant error',
-      fallback: generateGroundedFallback('مساعدة'),
+    res.status(200).json({
+      success: true,
+      reply: generateGroundedFallback((req.body && req.body.message) || 'مساعدة'),
+      provider: 'embedded-grounded-engine',
+      timestamp: Date.now(),
     });
   }
 });

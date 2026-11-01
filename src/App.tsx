@@ -20,6 +20,7 @@ import { QuoteModal } from './components/QuoteModal';
 import { CmsAdminModal } from './components/CmsAdminModal';
 import { StaticPages } from './components/StaticPages';
 import { AiAssistant } from './components/AiAssistant';
+import { matchesArabicSearch } from './utils/arabicSearch';
 
 export default function App() {
   // Articles state initialized from LocalStorage or Default Imported Articles
@@ -76,20 +77,21 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Filtering articles
+  // Filtering articles with letter-sensitive, normalized Arabic search
   const filteredArticles = articles.filter((art) => {
-    const matchesQuery =
+    const queryMatches =
       searchQuery === '' ||
-      art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.plainText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.categories.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()));
+      matchesArabicSearch(art.title, searchQuery) ||
+      matchesArabicSearch(art.plainText, searchQuery) ||
+      matchesArabicSearch(art.department, searchQuery) ||
+      art.categories.some((c) => matchesArabicSearch(c, searchQuery));
 
     const matchesDept = selectedDept === 'all' || art.department === selectedDept;
 
     const matchesTag =
-      selectedTag === '' || art.categories.some((c) => c.toLowerCase().includes(selectedTag.toLowerCase()));
+      selectedTag === '' || art.categories.some((c) => matchesArabicSearch(c, selectedTag));
 
-    return matchesQuery && matchesDept && matchesTag;
+    return queryMatches && matchesDept && matchesTag;
   });
 
   const handleSelectDepartment = (deptName: string) => {
