@@ -20,6 +20,7 @@ import { QuoteModal } from './components/QuoteModal';
 import { CmsAdminModal } from './components/CmsAdminModal';
 import { StaticPages } from './components/StaticPages';
 import { AiAssistant } from './components/AiAssistant';
+import { matchesArabicSearch } from './utils/arabicSearch';
 
 export default function App() {
   // Articles state initialized from LocalStorage or Default Imported Articles
@@ -76,20 +77,21 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Filtering articles
+  // Filtering articles with letter-sensitive, normalized Arabic search
   const filteredArticles = articles.filter((art) => {
-    const matchesQuery =
+    const queryMatches =
       searchQuery === '' ||
-      art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.plainText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.categories.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()));
+      matchesArabicSearch(art.title, searchQuery) ||
+      matchesArabicSearch(art.plainText, searchQuery) ||
+      matchesArabicSearch(art.department, searchQuery) ||
+      art.categories.some((c) => matchesArabicSearch(c, searchQuery));
 
     const matchesDept = selectedDept === 'all' || art.department === selectedDept;
 
     const matchesTag =
-      selectedTag === '' || art.categories.some((c) => c.toLowerCase().includes(selectedTag.toLowerCase()));
+      selectedTag === '' || art.categories.some((c) => matchesArabicSearch(c, selectedTag));
 
-    return matchesQuery && matchesDept && matchesTag;
+    return queryMatches && matchesDept && matchesTag;
   });
 
   const handleSelectDepartment = (deptName: string) => {
@@ -111,6 +113,36 @@ export default function App() {
     setIsQuoteModalOpen(true);
   };
 
+  // Handle section anchors & tab navigation seamlessly
+  const handleNavigate = (target: string, deptName?: string) => {
+    if (deptName) {
+      handleSelectDepartment(deptName);
+      return;
+    }
+
+    if (target.startsWith('#')) {
+      const sectionId = target.slice(1);
+      if (currentTab !== 'home') {
+        setCurrentTab('home');
+        setTimeout(() => {
+          const el = document.getElementById(sectionId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
+      } else {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      return;
+    }
+
+    setCurrentTab(target);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-900 selection:bg-sky-500 selection:text-white">
       {/* 1. Top Bar & Navigation */}
@@ -119,13 +151,15 @@ export default function App() {
         setCurrentTab={navigateToTab}
         onOpenCms={() => setIsCmsOpen(true)}
         onOpenQuoteModal={() => handleOpenQuote()}
+        onSelectDepartment={handleSelectDepartment}
+        onNavigateSection={handleNavigate}
       />
 
       {/* 2. Breaking Service Ticker */}
       <Ticker />
 
       {/* 3. Main Views Content */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 sm:pb-8">
         {currentTab === 'home' && (
           <>
             {/* Hero Slider with Real Showcase Imagery */}

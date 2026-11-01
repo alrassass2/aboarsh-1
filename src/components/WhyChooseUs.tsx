@@ -8,7 +8,7 @@ interface WhyChooseUsProps {
 
 export const WhyChooseUs: React.FC<WhyChooseUsProps> = ({ onOpenQuoteModal }) => {
   return (
-    <section className="py-14 sm:py-20 bg-slate-900 text-white relative overflow-hidden">
+    <section id="why-us" className="py-14 sm:py-20 bg-slate-900 text-white relative overflow-hidden scroll-mt-20">
       <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 

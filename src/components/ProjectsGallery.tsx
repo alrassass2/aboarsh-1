@@ -81,7 +81,7 @@ export const ProjectsGallery: React.FC = () => {
     : projects.filter((p) => p.category === selectedCategory);
 
   return (
-    <section className="py-12 sm:py-16 bg-white">
+    <section id="projects" className="py-12 sm:py-16 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-10">
           <span className="text-xs font-bold text-sky-600 tracking-wider uppercase block mb-2">

@@ -2,6 +2,7 @@ import { COMPANY_DATA } from '../data/companyData';
 import { DEPARTMENTS } from '../data/categoriesData';
 import { INITIAL_ARTICLES } from '../data/articlesData';
 import { ALL_KEYWORDS } from '../data/keywordsData';
+import { normalizeArabic, matchesArabicSearch } from './arabicSearch';
 
 export interface AssistantResponse {
   answer: string;
@@ -18,7 +19,7 @@ export interface AssistantResponse {
  * Knowledge Base Grounding & Smart QA Engine for زجاج سكريت ابوعريش
  */
 export function getGroundedAnswer(userQuery: string): AssistantResponse {
-  const query = userQuery.trim().toLowerCase();
+  const query = normalizeArabic(userQuery);
 
   // 1. Phone / Contact / WhatsApp Queries
   if (

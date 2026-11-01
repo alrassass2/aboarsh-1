@@ -6,7 +6,7 @@ export const GoogleMapsSection: React.FC = () => {
   const embedUrl = COMPANY_DATA.googleMapsEmbedUrl;
 
   return (
-    <section className="py-12 sm:py-16 bg-white border-b border-slate-200">
+    <section id="location" className="py-12 sm:py-16 bg-white border-b border-slate-200 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-10">
           <span className="text-xs font-bold text-sky-600 tracking-wider uppercase block mb-2">
